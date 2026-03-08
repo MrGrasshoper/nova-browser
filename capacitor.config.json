@@ -1,0 +1,18 @@
+{
+  "appId": "com.novabrowser.app",
+  "appName": "Nova Browser",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#0a0a12",
+      "showSpinner": false
+    }
+  }
+}
