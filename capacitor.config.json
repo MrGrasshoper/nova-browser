@@ -6,7 +6,12 @@
   "android": {
     "allowMixedContent": true,
     "captureInput": true,
-    "webContentsDebuggingEnabled": false
+    "webContentsDebuggingEnabled": false,
+    "allowNavigation": ["*"]
+  },
+  "server": {
+    "allowNavigation": ["*"],
+    "cleartext": true
   },
   "plugins": {
     "SplashScreen": {
