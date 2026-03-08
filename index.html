@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Nova Browser</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a12;
+    --surface: #13131f;
+    --surface2: #1c1c2e;
+    --surface3: #252538;
+    --accent: #7c6dfa;
+    --accent2: #fa6d9f;
+    --accent3: #6dfad2;
+    --text: #f0efff;
+    --text2: #9997bb;
+    --text3: #5e5c80;
+    --border: rgba(124,109,250,0.15);
+    --glow: rgba(124,109,250,0.25);
+    --radius: 18px;
+    --radius-sm: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; flex-direction: column; height: 100dvh; }
+  .screen.active { display: flex; }
+
+  /* ── HOME SCREEN ── */
+  #home {
+    background: radial-gradient(ellipse at 60% 0%, #1a1040 0%, #0a0a12 60%);
+    overflow-y: auto;
+  }
+
+  .home-header {
+    padding: 54px 22px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 400; display: block; -webkit-text-fill-color: var(--text3); letter-spacing: 2px; }
+
+  .home-time {
+    text-align: right;
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--text);
+  }
+  .home-date { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  /* Search bar */
+  .search-wrap {
+    margin: 10px 22px 0;
+    position: relative;
+  }
+
+  .search-bar {
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    padding: 16px 56px 16px 22px;
+    font-size: 15px;
+    font-family: 'Outfit', sans-serif;
+    color: var(--text);
+    outline: none;
+    transition: all 0.3s;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+  }
+
+  .search-bar::placeholder { color: var(--text3); }
+  .search-bar:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--glow), 0 4px 30px rgba(0,0,0,0.3);
+  }
+
+  .search-btn {
+    position: absolute;
+    right: 8px; top: 50%;
+    transform: translateY(-50%);
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(124,109,250,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .search-btn:active { transform: translateY(-50%) scale(0.92); }
+
+  .search-btn svg { width: 17px; height: 17px; stroke: #fff; fill: none; }
+
+  /* Quick access */
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--text3);
+    text-transform: uppercase;
+    padding: 24px 22px 12px;
+  }
+
+  .quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 0 22px;
+  }
+
+  .quick-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .quick-item:active { transform: scale(0.9); }
+
+  .quick-icon {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    border: 1.5px solid var(--border);
+    background: var(--surface2);
+    position: relative;
+    overflow: hidden;
+  }
+  .quick-icon::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent);
+  }
+
+  .quick-label {
+    font-size: 11px;
+    color: var(--text2);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+  }
+
+  /* Bookmarks */
+  .bookmarks-list {
+    padding: 0 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 100px;
+  }
+
+  .bookmark-card {
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .bookmark-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 0 4px 4px 0;
+  }
+  .bookmark-card:active { transform: scale(0.98); background: var(--surface3); }
+
+  .bookmark-icon { font-size: 22px; flex-shrink: 0; }
+  .bookmark-info { flex: 1; min-width: 0; }
+  .bookmark-name { font-size: 14px; font-weight: 500; color: var(--text); }
+  .bookmark-url { font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .bookmark-del {
+    width: 30px; height: 30px;
+    border: none; background: transparent;
+    color: var(--text3);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .bookmark-del:active { background: rgba(250,109,159,0.2); color: var(--accent2); }
+
+  /* ── BROWSER SCREEN ── */
+  #browser { background: var(--bg); }
+
+  .browser-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 12px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .nav-btn {
+    width: 36px; height: 36px;
+    background: var(--surface2);
+    border: none;
+    border-radius: 10px;
+    color: var(--text2);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .nav-btn:active { background: var(--surface3); color: var(--accent); }
+  .nav-btn:disabled { opacity: 0.3; }
+
+  .url-bar-wrap {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .url-bar {
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 36px 10px 14px;
+    font-size: 13px;
+    font-family: 'Outfit', sans-serif;
+    color: var(--text);
+    outline: none;
+    transition: all 0.3s;
+  }
+  .url-bar:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
+
+  .ssl-icon {
+    position: absolute;
+    right: 10px;
+    font-size: 14px;
+    color: var(--accent3);
+    pointer-events: none;
+  }
+
+  .browser-frame-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .browser-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #fff;
+  }
+
+  .loading-bar {
+    position: absolute;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    border-radius: 0 2px 2px 0;
+    width: 0%;
+    transition: width 0.4s ease;
+    z-index: 10;
+    box-shadow: 0 0 10px var(--accent);
+  }
+
+  .page-blocker {
+    position: absolute; inset: 0;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 5;
+  }
+  .page-blocker .blob {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    box-shadow: 0 0 40px var(--glow);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 40px var(--glow); transform: scale(1); }
+    50% { box-shadow: 0 0 60px var(--glow); transform: scale(1.05); }
+  }
+  .page-blocker h3 { font-size: 18px; font-weight: 600; }
+  .page-blocker p { font-size: 13px; color: var(--text3); text-align: center; padding: 0 40px; }
+
+  /* ── HISTORY SCREEN ── */
+  #history { overflow-y: auto; }
+
+  .screen-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 52px 20px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+  .back-btn {
+    width: 36px; height: 36px;
+    background: var(--surface2);
+    border: none; border-radius: 10px;
+    color: var(--text2); font-size: 20px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .screen-header h2 { font-size: 18px; font-weight: 600; flex: 1; }
+
+  .clear-btn {
+    background: rgba(250,109,159,0.15);
+    border: 1px solid rgba(250,109,159,0.3);
+    border-radius: 10px;
+    padding: 8px 14px;
+    color: var(--accent2);
+    font-size: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .history-list {
+    padding: 16px 20px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .history-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .history-item:active { background: var(--surface3); }
+  .history-emoji { font-size: 20px; }
+  .history-info { flex: 1; min-width: 0; }
+  .history-title { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-time { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state p { font-size: 14px; }
+
+  /* ── SETTINGS SCREEN ── */
+  #settings { overflow-y: auto; }
+
+  .settings-list {
+    padding: 16px 20px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .settings-group {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .settings-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .settings-item:last-child { border-bottom: none; }
+  .settings-item:active { background: var(--surface3); }
+
+  .settings-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .settings-icon.purple { background: rgba(124,109,250,0.2); }
+  .settings-icon.pink { background: rgba(250,109,159,0.2); }
+  .settings-icon.teal { background: rgba(109,250,210,0.2); }
+  .settings-icon.orange { background: rgba(250,180,109,0.2); }
+
+  .settings-label { flex: 1; font-size: 15px; font-weight: 500; }
+  .settings-value { font-size: 13px; color: var(--text3); }
+
+  .toggle {
+    width: 46px; height: 26px;
+    background: var(--surface3);
+    border-radius: 50px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+    border: none;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 20px; height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: transform 0.3s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .toggle.on::after { transform: translateX(20px); }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(13,13,20,0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0 20px;
+    z-index: 100;
+  }
+
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 6px 0;
+    transition: all 0.2s;
+    border: none;
+    background: transparent;
+    color: var(--text3);
+    font-family: 'Outfit', sans-serif;
+  }
+  .nav-item:active { transform: scale(0.9); }
+  .nav-item.active { color: var(--accent); }
+
+  .nav-item svg {
+    width: 22px; height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: all 0.3s;
+  }
+  .nav-item.active svg { filter: drop-shadow(0 0 6px var(--accent)); }
+
+  .nav-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  .nav-dot {
+    width: 4px; height: 4px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-top: 2px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .nav-item.active .nav-dot { opacity: 1; }
+
+  /* ADD BOOKMARK MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    z-index: 200;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 28px 28px 0 0;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    padding: 24px 24px 40px;
+    width: 100%;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .modal-handle {
+    width: 40px; height: 4px;
+    background: var(--surface3);
+    border-radius: 50px;
+    margin: 0 auto 24px;
+  }
+
+  .modal h3 { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+
+  .modal-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 15px;
+    font-family: 'Outfit', sans-serif;
+    color: var(--text);
+    outline: none;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-input::placeholder { color: var(--text3); }
+
+  .modal-actions { display: flex; gap: 12px; margin-top: 8px; }
+  .modal-cancel {
+    flex: 1;
+    padding: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--text2);
+    font-size: 15px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .modal-save {
+    flex: 2;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 15px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(124,109,250,0.4);
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    z-index: 300;
+    opacity: 0;
+    transition: all 0.3s;
+    white-space: nowrap;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 0; }
+
+  /* Suggestion dropdown */
+  .suggestions {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0; right: 0;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    z-index: 50;
+    display: none;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .suggestions.show { display: block; }
+
+  .suggestion-item {
+    padding: 13px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+  }
+  .suggestion-item:last-child { border-bottom: none; }
+  .suggestion-item:active { background: var(--surface3); }
+  .suggestion-item span { font-size: 14px; color: var(--text2); }
+  .suggestion-icon { font-size: 16px; }
+</style>
+</head>
+<body>
+
+<!-- HOME SCREEN -->
+<div id="home" class="screen active">
+  <div class="home-header">
+    <div class="logo">Nova<span>BROWSER</span></div>
+    <div>
+      <div class="home-time" id="clock">--:--</div>
+      <div class="home-date" id="dateDisplay">---</div>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <input class="search-bar" id="homeSearch" placeholder="Search or enter URL..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+    <div class="suggestions" id="homeSuggestions">
+      <div class="suggestion-item" onclick="searchFromSuggestion(this, 'Google')"><span class="suggestion-icon">🔍</span><span>Search on Google</span></div>
+      <div class="suggestion-item" onclick="searchFromSuggestion(this, 'YouTube')"><span class="suggestion-icon">📺</span><span>Search on YouTube</span></div>
+      <div class="suggestion-item" onclick="searchFromSuggestion(this, 'Wikipedia')"><span class="suggestion-icon">📚</span><span>Search on Wikipedia</span></div>
+    </div>
+    <button class="search-btn" onclick="doSearch()">
+      <svg viewBox="0 0 24 24" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+    </button>
+  </div>
+
+  <div class="section-title">Quick Access</div>
+  <div class="quick-grid" id="quickGrid">
+    <div class="quick-item" onclick="openPage('https://google.com','Google')">
+      <div class="quick-icon">🔍</div>
+      <div class="quick-label">Google</div>
+    </div>
+    <div class="quick-item" onclick="openPage('https://youtube.com','YouTube')">
+      <div class="quick-icon">📺</div>
+      <div class="quick-label">YouTube</div>
+    </div>
+    <div class="quick-item" onclick="openPage('https://wikipedia.org','Wikipedia')">
+      <div class="quick-icon">📚</div>
+      <div class="quick-label">Wikipedia</div>
+    </div>
+    <div class="quick-item" onclick="openPage('https://github.com','GitHub')">
+      <div class="quick-icon">🐙</div>
+      <div class="quick-label">GitHub</div>
+    </div>
+    <div class="quick-item" onclick="openPage('https://reddit.com','Reddit')">
+      <div class="quick-icon">🤖</div>
+      <div class="quick-label">Reddit</div>
+    </div>
+    <div class="quick-item" onclick="openPage('https://twitter.com','Twitter')">
+      <div class="quick-icon">🐦</div>
+      <div class="quick-label">Twitter</div>
+    </div>
+    <div class="quick-item" onclick="openPage('https://amazon.com','Amazon')">
+      <div class="quick-icon">🛒</div>
+      <div class="quick-label">Amazon</div>
+    </div>
+    <div class="quick-item" onclick="showAddBookmark()">
+      <div class="quick-icon">➕</div>
+      <div class="quick-label">Add Site</div>
+    </div>
+  </div>
+
+  <div class="section-title">Bookmarks</div>
+  <div class="bookmarks-list" id="bookmarksList">
+    <div class="empty-state">
+      <div class="icon">🔖</div>
+      <p>No bookmarks yet.<br>Add your favorite sites!</p>
+    </div>
+  </div>
+</div>
+
+<!-- BROWSER SCREEN -->
+<div id="browser" class="screen">
+  <div class="browser-header">
+    <button class="nav-btn" id="backBtn" onclick="goBack()">←</button>
+    <button class="nav-btn" id="fwdBtn" onclick="goForward()">→</button>
+    <div class="url-bar-wrap">
+      <input class="url-bar" id="urlBar" placeholder="Enter URL or search..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+      <span class="ssl-icon">🔒</span>
+    </div>
+    <button class="nav-btn" onclick="refreshPage()">↻</button>
+    <button class="nav-btn" onclick="bookmarkCurrent()">🔖</button>
+  </div>
+  <div class="browser-frame-wrap">
+    <div class="loading-bar" id="loadingBar"></div>
+    <div class="page-blocker" id="pageBlocker">
+      <div class="blob">🌐</div>
+      <h3>Nova Browser</h3>
+      <p>Due to browser security rules, sites open in a new tab. Tap the button to navigate.</p>
+    </div>
+    <iframe class="browser-frame" id="webFrame" sandbox="allow-same-origin allow-scripts allow-forms allow-popups" title="Browser Frame"></iframe>
+  </div>
+</div>
+
+<!-- HISTORY SCREEN -->
+<div id="history" class="screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="showScreen('home')">←</button>
+    <h2>History</h2>
+    <button class="clear-btn" onclick="clearHistory()">Clear All</button>
+  </div>
+  <div class="history-list" id="historyList"></div>
+</div>
+
+<!-- SETTINGS SCREEN -->
+<div id="settings" class="screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="showScreen('home')">←</button>
+    <h2>Settings</h2>
+  </div>
+  <div class="settings-list">
+    <div style="font-size:11px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;padding:4px 4px 8px;">General</div>
+    <div class="settings-group">
+      <div class="settings-item">
+        <div class="settings-icon purple">🔍</div>
+        <div class="settings-label">Default Search</div>
+        <div class="settings-value" id="searchEngineLabel">Google</div>
+      </div>
+      <div class="settings-item" onclick="toggleTheme()">
+        <div class="settings-icon pink">🌓</div>
+        <div class="settings-label">Dark Mode</div>
+        <button class="toggle on" id="darkToggle"></button>
+      </div>
+      <div class="settings-item" onclick="toggleJS()">
+        <div class="settings-icon teal">⚡</div>
+        <div class="settings-label">JavaScript</div>
+        <button class="toggle on" id="jsToggle"></button>
+      </div>
+    </div>
+
+    <div style="font-size:11px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;padding:12px 4px 8px;">Search Engine</div>
+    <div class="settings-group">
+      <div class="settings-item" onclick="setEngine('Google','google.com/search?q=')">
+        <div class="settings-icon purple">🔍</div>
+        <div class="settings-label">Google</div>
+        <span id="eng-google" style="color:var(--accent)">✓</span>
+      </div>
+      <div class="settings-item" onclick="setEngine('Bing','bing.com/search?q=')">
+        <div class="settings-icon purple">🔷</div>
+        <div class="settings-label">Bing</div>
+        <span id="eng-bing" style="display:none;color:var(--accent)">✓</span>
+      </div>
+      <div class="settings-item" onclick="setEngine('DuckDuckGo','duckduckgo.com/?q=')">
+        <div class="settings-icon purple">🦆</div>
+        <div class="settings-label">DuckDuckGo</div>
+        <span id="eng-duckduckgo" style="display:none;color:var(--accent)">✓</span>
+      </div>
+    </div>
+
+    <div style="font-size:11px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;padding:12px 4px 8px;">Data</div>
+    <div class="settings-group">
+      <div class="settings-item" onclick="clearHistory();showToast('History cleared!')">
+        <div class="settings-icon orange">🕐</div>
+        <div class="settings-label">Clear History</div>
+      </div>
+      <div class="settings-item" onclick="clearBookmarks()">
+        <div class="settings-icon pink">🔖</div>
+        <div class="settings-label">Clear Bookmarks</div>
+      </div>
+      <div class="settings-item" onclick="clearAll()">
+        <div class="settings-icon pink">🗑️</div>
+        <div class="settings-label">Clear All Data</div>
+      </div>
+    </div>
+
+    <div class="settings-group" style="margin-top:4px;">
+      <div class="settings-item">
+        <div class="settings-icon teal">✨</div>
+        <div class="settings-label">Nova Browser</div>
+        <div class="settings-value">v1.0</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" id="nav-home" onclick="showScreen('home')">
+    <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+    <span class="nav-label">Home</span>
+    <div class="nav-dot"></div>
+  </button>
+  <button class="nav-item" id="nav-browser" onclick="showScreen('browser')">
+    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="3"/><path d="M2 8h20"/><circle cx="6" cy="5.5" r="0.8" fill="currentColor" stroke="none"/><circle cx="9.5" cy="5.5" r="0.8" fill="currentColor" stroke="none"/><circle cx="13" cy="5.5" r="0.8" fill="currentColor" stroke="none"/></svg>
+    <span class="nav-label">Browser</span>
+    <div class="nav-dot"></div>
+  </button>
+  <button class="nav-item" id="nav-history" onclick="showScreen('history');loadHistory()">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    <span class="nav-label">History</span>
+    <div class="nav-dot"></div>
+  </button>
+  <button class="nav-item" id="nav-settings" onclick="showScreen('settings')">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <span class="nav-label">Settings</span>
+    <div class="nav-dot"></div>
+  </button>
+</nav>
+
+<!-- ADD BOOKMARK MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="hideModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h3>Add Bookmark</h3>
+    <input class="modal-input" id="bmName" placeholder="Name (e.g. My Blog)">
+    <input class="modal-input" id="bmUrl" placeholder="URL (e.g. https://example.com)">
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">Pick an icon:</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;" id="emojiPicker">
+      🌐 📰 🛍️ 🎮 🎵 📷 💼 🏠 ❤️ ⭐ 🔥 💡
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="hideModal()">Cancel</button>
+      <button class="modal-save" onclick="saveBookmark()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  let data = {
+    bookmarks: [],
+    history: [],
+    engine: { name: 'Google', url: 'google.com/search?q=' },
+    darkMode: true,
+    jsEnabled: true
+  };
+
+  let selectedEmoji = '🌐';
+  let currentUrl = '';
+
+  // ── INIT ──
+  function init() {
+    const saved = localStorage.getItem('novaBrowserData');
+    if (saved) {
+      try { data = { ...data, ...JSON.parse(saved) }; } catch(e) {}
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+    renderBookmarks();
+    setupSearchBar();
+    setupUrlBar();
+    setupEmojiPicker();
+  }
+
+  function save() {
+    localStorage.setItem('novaBrowserData', JSON.stringify(data));
+  }
+
+  // ── CLOCK ──
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('clock').textContent = h + ':' + m;
+    document.getElementById('dateDisplay').textContent = now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  }
+
+  // ── SCREENS ──
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(name).classList.add('active');
+    document.getElementById('nav-'+name)?.classList.add('active');
+    if (name === 'history') loadHistory();
+  }
+
+  // ── SEARCH ──
+  function setupSearchBar() {
+    const bar = document.getElementById('homeSearch');
+    const sugg = document.getElementById('homeSuggestions');
+    bar.addEventListener('input', () => {
+      sugg.classList.toggle('show', bar.value.length > 0);
+    });
+    bar.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { doSearch(); sugg.classList.remove('show'); }
+    });
+    document.addEventListener('click', e => {
+      if (!bar.contains(e.target)) sugg.classList.remove('show');
+    });
+  }
+
+  function searchFromSuggestion(el, engine) {
+    const query = document.getElementById('homeSearch').value.trim();
+    if (!query) return;
+    let url;
+    if (engine === 'Google') url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    else if (engine === 'YouTube') url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+    else url = `https://en.wikipedia.org/wiki/Special:Search?search=${encodeURIComponent(query)}`;
+    openPage(url, query + ' – ' + engine);
+  }
+
+  function doSearch() {
+    const val = document.getElementById('homeSearch').value.trim();
+    if (!val) return;
+    let url;
+    if (val.match(/^https?:\/\//)) url = val;
+    else if (val.includes('.') && !val.includes(' ')) url = 'https://' + val;
+    else url = `https://${data.engine.url}${encodeURIComponent(val)}`;
+    openPage(url, val);
+    document.getElementById('homeSearch').value = '';
+  }
+
+  // ── URL BAR ──
+  function setupUrlBar() {
+    const bar = document.getElementById('urlBar');
+    bar.addEventListener('keydown', e => {
+      if (e.key === 'Enter') navigateTo(bar.value);
+    });
+  }
+
+  function navigateTo(val) {
+    let url;
+    if (val.match(/^https?:\/\//)) url = val;
+    else if (val.includes('.') && !val.includes(' ')) url = 'https://' + val;
+    else url = `https://${data.engine.url}${encodeURIComponent(val)}`;
+    openPage(url, val);
+  }
+
+  // ── OPEN PAGE ──
+  function openPage(url, title) {
+    currentUrl = url;
+    document.getElementById('urlBar').value = url;
+    showScreen('browser');
+    simulateLoad();
+    addToHistory(url, title || url);
+    // Open in new tab (iframe blocked by most sites)
+    window.open(url, '_blank');
+    showToast('Opening in new tab 🚀');
+  }
+
+  function simulateLoad() {
+    const bar = document.getElementById('loadingBar');
+    bar.style.width = '0%';
+    bar.style.opacity = '1';
+    let w = 0;
+    const iv = setInterval(() => {
+      w += Math.random() * 25;
+      if (w > 90) w = 90;
+      bar.style.width = w + '%';
+    }, 200);
+    setTimeout(() => {
+      clearInterval(iv);
+      bar.style.width = '100%';
+      setTimeout(() => { bar.style.opacity = '0'; bar.style.width = '0%'; }, 400);
+    }, 1200);
+  }
+
+  function goBack() { history.back(); }
+  function goForward() { history.forward(); }
+  function refreshPage() { if (currentUrl) openPage(currentUrl, currentUrl); }
+
+  // ── BOOKMARKS ──
+  function renderBookmarks() {
+    const list = document.getElementById('bookmarksList');
+    if (!data.bookmarks.length) {
+      list.innerHTML = '<div class="empty-state"><div class="icon">🔖</div><p>No bookmarks yet.<br>Add your favorite sites!</p></div>';
+      return;
+    }
+    list.innerHTML = data.bookmarks.map((b, i) => `
+      <div class="bookmark-card" onclick="openPage('${b.url}','${b.name}')">
+        <span class="bookmark-icon">${b.icon}</span>
+        <div class="bookmark-info">
+          <div class="bookmark-name">${b.name}</div>
+          <div class="bookmark-url">${b.url}</div>
+        </div>
+        <button class="bookmark-del" onclick="event.stopPropagation();deleteBookmark(${i})">×</button>
+      </div>
+    `).join('');
+  }
+
+  function deleteBookmark(i) {
+    data.bookmarks.splice(i, 1);
+    save(); renderBookmarks(); showToast('Bookmark removed');
+  }
+
+  function clearBookmarks() {
+    if (!data.bookmarks.length) { showToast('No bookmarks to clear'); return; }
+    data.bookmarks = [];
+    save(); renderBookmarks(); showToast('Bookmarks cleared');
+  }
+
+  function bookmarkCurrent() {
+    if (!currentUrl) { showToast('No page open'); return; }
+    showAddBookmark(currentUrl);
+  }
+
+  function showAddBookmark(url = '') {
+    document.getElementById('bmUrl').value = url;
+    document.getElementById('bmName').value = '';
+    selectedEmoji = '🌐';
+    document.querySelectorAll('.e-btn').forEach(b => b.classList.remove('e-sel'));
+    document.getElementById('modalOverlay').classList.add('show');
+  }
+
+  function hideModal(e) {
+    if (!e || e.target === document.getElementById('modalOverlay'))
+      document.getElementById('modalOverlay').classList.remove('show');
+  }
+
+  function saveBookmark() {
+    const name = document.getElementById('bmName').value.trim();
+    const url = document.getElementById('bmUrl').value.trim();
+    if (!name || !url) { showToast('Please fill both fields'); return; }
+    const fullUrl = url.startsWith('http') ? url : 'https://' + url;
+    data.bookmarks.push({ name, url: fullUrl, icon: selectedEmoji });
+    save(); renderBookmarks();
+    document.getElementById('modalOverlay').classList.remove('show');
+    showToast('Bookmark saved! 🔖');
+  }
+
+  function setupEmojiPicker() {
+    const picker = document.getElementById('emojiPicker');
+    const emojis = ['🌐','📰','🛍️','🎮','🎵','📷','💼','🏠','❤️','⭐','🔥','💡'];
+    picker.innerHTML = emojis.map(e =>
+      `<button class="e-btn" onclick="selectEmoji('${e}',this)" style="
+        font-size:22px;background:var(--surface2);border:1.5px solid var(--border);
+        border-radius:10px;width:42px;height:42px;cursor:pointer;transition:all 0.2s;
+      ">${e}</button>`
+    ).join('');
+  }
+
+  function selectEmoji(e, btn) {
+    selectedEmoji = e;
+    document.querySelectorAll('.e-btn').forEach(b => {
+      b.style.borderColor = 'var(--border)'; b.style.background = 'var(--surface2)';
+    });
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.background = 'rgba(124,109,250,0.2)';
+  }
+
+  // ── HISTORY ──
+  function addToHistory(url, title) {
+    data.history.unshift({ url, title, time: new Date().toISOString() });
+    if (data.history.length > 100) data.history.pop();
+    save();
+  }
+
+  function loadHistory() {
+    const list = document.getElementById('historyList');
+    if (!data.history.length) {
+      list.innerHTML = '<div class="empty-state"><div class="icon">🕐</div><p>No browsing history yet</p></div>';
+      return;
+    }
+    list.innerHTML = data.history.map((h, i) => {
+      const d = new Date(h.time);
+      const timeStr = d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + ' · ' + d.toLocaleDateString([], {month:'short', day:'numeric'});
+      return `
+        <div class="history-item" onclick="openPage('${h.url}','${h.title}')">
+          <span class="history-emoji">🌐</span>
+          <div class="history-info">
+            <div class="history-title">${h.title}</div>
+            <div class="history-time">${timeStr}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function clearHistory() {
+    data.history = [];
+    save(); loadHistory(); showToast('History cleared');
+  }
+
+  function clearAll() {
+    data.bookmarks = [];
+    data.history = [];
+    save(); renderBookmarks(); showToast('All data cleared');
+  }
+
+  // ── SETTINGS ──
+  function setEngine(name, url) {
+    data.engine = { name, url };
+    document.getElementById('searchEngineLabel').textContent = name;
+    ['google','bing','duckduckgo'].forEach(e => {
+      document.getElementById('eng-'+e).style.display = 'none';
+    });
+    document.getElementById('eng-'+name.toLowerCase()).style.display = 'inline';
+    save(); showToast('Search engine: ' + name);
+  }
+
+  function toggleTheme() {
+    data.darkMode = !data.darkMode;
+    document.getElementById('darkToggle').classList.toggle('on', data.darkMode);
+    showToast(data.darkMode ? 'Dark mode on' : 'Light mode off');
+    save();
+  }
+
+  function toggleJS() {
+    data.jsEnabled = !data.jsEnabled;
+    document.getElementById('jsToggle').classList.toggle('on', data.jsEnabled);
+    showToast(data.jsEnabled ? 'JavaScript enabled' : 'JavaScript disabled');
+    save();
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  init();
+</script>
+</body>
+</html>
